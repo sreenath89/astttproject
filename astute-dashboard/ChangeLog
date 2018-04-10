@@ -1,0 +1,28 @@
+CHANGES
+=======
+
+* Adding filter option for Plan Mappings
+* Adding filter option for Plan Mappings
+* Adding filter option for Plan Mappings
+* Adding fileter option for Plan Mappings
+* Modifications for hiding the delete option from Plan Mapping page
+* Changes related to display of VM name in frontend
+* Changes related to display of VM name in frontend
+* commented to fix the volume size and image metada size comparison exception
+* Fixing the issue with the Quota display
+* Policy changes to fix the issue while creating Vm
+* Adding the manifest file
+* Correction to project dashboard
+* Correction to project dashboard
+* Adding conf files
+* Adding latest project dashboard changes
+* Adding latest modified files
+* Adding latest modified files
+* Add keystone policy files
+* Latest files of project dashboard, api and quota section
+* Fixing the project panel display issue
+* Keystone connection related changes and fixing the user plan update bug
+* Adding first name, last name and phone number fields
+* Change to fix the ERR display in frontend
+* Adding all the M1 specific modifications
+* Initial commit
