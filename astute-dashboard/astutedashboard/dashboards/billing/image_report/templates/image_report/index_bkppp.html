@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% block title %}{% trans "SQL Image Usage Report" %}{% endblock %}
+
+{% block main %}
+    <form id="sql-image-report-filter" class="form-inline">
+        <label>&nbsp;&nbsp;&nbsp;Date&nbsp;</label>
+        <label for="image-filter-period-from">From:</label>
+        <input id="image-filter-period-from" class="form-control" type="date" name="image_usage_period_from" value="{{ image_filter_period_from }}">
+        <label for="image-filter-period-to">&nbsp;To:</label>
+        <input id="image-filter-period-to" class="form-control" type="date" name="image_usage_period_to" value="{{ image_filter_period_to }}">
+        &nbsp;&nbsp;
+        <a id="image-filter-search" class="btn btn-default">
+            <span class="fa fa-search search-icon"></span>&nbsp;Search&#8230;
+        </a>
+    </form>
+    <script>
+
+        /* search filter handler */
+        function search_filter_handler () {
+            // horizon admin invoices filter handler
+            var url = '{{ admin_billing_invoices_filter_endpoint }}'
+            // show spinner
+            horizon.modals.modal_spinner('Loading')
+            // setup params
+            var params = {
+                'period_from': $('#image-filter-period-from').val(),
+                'period_to': $('#image-filter-period-to').val()
+            }
+            // send filter params
+            console.log('setting admin/billing/invoice filter: ', url)
+            $.get(url, params).always(function () {
+                // reload page
+                location.reload();
+            })
+        }
+
+        /* download helper */
+        function download (url) {
+            $('<iframe />')
+                .attr('src', url)
+                .hide()
+                .appendTo('body');
+        }
+
+        /* export as dat handler */
+        function export_as_handler (event) {
+            var url = $(event.target).attr('href')
+            // append invoice id for single download
+            event.preventDefault()
+            event.stopPropagation();
+            // trick for hide dropdown
+            $('body').trigger('click')
+            download(url)
+        }
+
+        /* entry point (DOM ready) */
+        $(document).ready(function () {
+            /* setup even handlers */
+            $('#image-filter-search').on('click', search_filter_handler)
+        })
+    </script>
+    {{ table.render }}
+{% endblock %}
+

@@ -44,15 +44,24 @@ class DeleteBillingPlanMapping(tables.DeleteAction):
 '''
 
 class BillingPlanMappingsTable(tables.DataTable):
-    id = tables.Column('id', verbose_name=_('ID'))
-    user = tables.Column('user', verbose_name=_('Account'))
-    plan = tables.Column('plan', verbose_name=_('Plan'))
-    vm_name = tables.Column('vm_name', verbose_name=_('VM Name'))
-    qty =  tables.Column('qty', verbose_name=_('Qty.'))
-    created_on =  tables.Column('created_on', verbose_name=_('Created On'))
-    contract_period =  tables.Column('contract_period', verbose_name=_('Period'))
-    inactive_on =  tables.Column('inactive_on', verbose_name=_('Inactive On'))
-    status =  tables.Column('status', verbose_name=_('Status'))
+    #id = tables.Column('id', verbose_name=_('ID'))
+    #user = tables.Column('user', verbose_name=_('Account'))
+    #plan = tables.Column('plan', verbose_name=_('Plan'))
+    #vm_name = tables.Column('vm_name', verbose_name=_('VM Name'))
+    #qty =  tables.Column('qty', verbose_name=_('Qty.'))
+    #created_on =  tables.Column('created_on', verbose_name=_('Created On'))
+    #contract_period =  tables.Column('contract_period', verbose_name=_('Period'))
+    #inactive_on =  tables.Column('inactive_on', verbose_name=_('Inactive On'))
+    #status =  tables.Column('status', verbose_name=_('Status'))
+    #abc = ['asasa', 'sasasa', 'sasasa', 'sasasa', 'sasasa']
+    #for i in abc:
+    def get_rows():
+      for x in xrange(1, 11):
+        print '-------------------------------------------------------->>'
+        print x
+        print '-------------------------------------------------------->>'
+        qty =  tables.Column('qty', verbose_name=_('Qty.'))
+        sasa = tables.Column('dsdassa', verbose_name=_('Date'))
 
     def get_object_id(self, datum):
         return datum['id']

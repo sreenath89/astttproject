@@ -19,7 +19,6 @@ from openstack_dashboard.api import keystone
 from openstack_dashboard.api import nova
 from openstack_dashboard.api import neutron
 from openstack_dashboard.usage import quotas
-from openstack_dashboard.api import glance
 
 from openstack_dashboard.local.local_settings import \
     ADMIN_AUTH_URL, \
@@ -36,11 +35,8 @@ else:
 from cinderclient import client as cclient
 from neutronclient.v2_0 import client
 from novaclient import client as nova_client
-from glanceclient.v1 import client as glance_client
 import requests as http
-from openstack_dashboard.dashboards.project.images \
-    import utils as image_utils
-from datetime import timedelta, date
+
 
 # Astute service base URL
 ASTUTE_BASE_URL = getattr(settings, 'ASTUTE_BASE_URL', 'http://os-controller1:9080/v1/')
@@ -90,18 +86,6 @@ def get_nova_client():
                               ADMIN_TENANT,
                               ADMIN_AUTH_URL)
     return nova
-
-def get_glance_client():    
-    '''Fetch the sql image usage count'''
-    glance_endpoint = get_admin_ksclient().service_catalog.url_for(service_type='image')
-    glance = glance_client.Client(version=1,
-                                  endpoint    = glance_endpoint,
-                                  username    = ADMIN_USERNAME,
-                                  password    = ADMIN_PASSWORD,
-                                  tenant_name = ADMIN_TENANT,
-                                  auth_url    = ADMIN_AUTH_URL
-                            )
-    return glance
 
 #
 # Common OpenStack API helpers
@@ -788,118 +772,5 @@ def get_instances(request):
         server_list.append(inst_dtls)
     return server_list
 
-####Image Count Section
-def get_image_count(request):
-    '''Fetch the sql image usage count'''
-
-    '''
-    image_data = {
-        '2018-04-08':{
-            'f6c3db4e-9cbd-4bd5-9e9a-d902e90f7f3e': 3,
-            'f6c3db4e-9cbd-4bd5-9e9a-d902e90f7f34': 1
-        },
-        '2018-04-09': {
-            'f6c3db4e-9cbd-4bd5-9e9a-d902e90f7f3e': 2,
-            'f6c3db4e-9cbd-4bd5-9e9a-d902e90f7f34': 0
-        }
-    }
-    '''
-    image_data = {  
-       u'2018-04-09':{  
-          u'73d9a2b6-27b3-49bf-aa89-8dc126784c44':4.0,
-          u'3f7384d7-de79-4813-b766-fef00a2e68dc':1.0,
-          u'4b8d8242-ed69-471a-aad3-ab63ad9e7217':1.0,
-          u'6494aa7b-c4b9-43db-8bff-90a6e1d3a714':1.0,
-          u'd0c639b1-1644-455c-b0e9-350a788fa531':3.0,
-          u'f21da7d6-e27b-418f-8cc6-e008bc255e0c':2.0,
-          u'aa3d6484-c7ee-4d06-85ce-5708cb7308c5':1.0,
-          u'3bb8af1f-ab8d-4c4d-93f2-dff7ca3917ab':25.0,
-          u'25c77eda-56aa-4f5e-b049-bceed49c68a8':1.0,
-          u'8dd064e2-2bfc-4841-bf3a-2b4fa4e7d11e':4.0,
-          u'a1de2463-4ecc-488e-926d-4c9cd8cd7f2e':1.0,
-          u'5147672e-9368-4e2f-b2cd-83de899f3978':1.0
-       },
-       u'2018-04-08':{  
-          u'73d9a2b6-27b3-49bf-aa89-8dc126784c44':4.0,
-          u'3f7384d7-de79-4813-b766-fef00a2e68dc':1.0,
-          u'4b8d8242-ed69-471a-aad3-ab63ad9e7217':1.0,
-          u'd0c639b1-1644-455c-b0e9-350a788fa531':3.0,
-          u'f21da7d6-e27b-418f-8cc6-e008bc255e0c':2.0,
-          u'aa3d6484-c7ee-4d06-85ce-5708cb7308c5':2.0,
-          u'3bb8af1f-ab8d-4c4d-93f2-dff7ca3917ab':25.0,
-          u'25c77eda-56aa-4f5e-b049-bceed49c68a8':1.0,
-          u'8dd064e2-2bfc-4841-bf3a-2b4fa4e7d11e':4.0,
-          u'a1de2463-4ecc-488e-926d-4c9cd8cd7f2e':1.0,
-          u'5147672e-9368-4e2f-b2cd-83de899f3978':1.0,
-          u'6494aa7b-c4b9-43db-8bff-90a6e1d3a714':1.0
-       },
-       u'2018-04-10':{  
-          u'3f7384d7-de79-4813-b766-fef00a2e68dc':1.0,
-          u'73d9a2b6-27b3-49bf-aa89-8dc126784c44':4.0,
-          u'4b8d8242-ed69-471a-aad3-ab63ad9e7217':1.0,
-          u'6494aa7b-c4b9-43db-8bff-90a6e1d3a714':1.0,
-          u'd0c639b1-1644-455c-b0e9-350a788fa531':3.0, 
-          u'f21da7d6-e27b-418f-8cc6-e008bc255e0c':2.0,
-          u'3bb8af1f-ab8d-4c4d-93f2-dff7ca3917ab':25.0,
-          u'25c77eda-56aa-4f5e-b049-bceed49c68a8':1.0,
-          u'8dd064e2-2bfc-4841-bf3a-2b4fa4e7d11e':4.0,
-          u'a1de2463-4ecc-488e-926d-4c9cd8cd7f2e':1.0,
-          u'5147672e-9368-4e2f-b2cd-83de899f3978':1.0
-       }
-    }
-
-    print type(image_data)
-    return image_data
-
-def get_image_list(request):
-    #gc = get_glance_client()
-    #image_list = gc.images.list()
-    #return image_list
-    images = image_utils.get_available_images(request, project_id=None, images_cache=None)
-    image_dict = dict([(image.id, image.name) for image in images])
-    return image_dict
-
-def get_image_name(request, image_id):
-    image_list = get_image_list(request)
-    if image_id in image_list:
-        image_name = image_list[image_id] + str(image_id)
-    else:
-        image_name = 'ERROR!!' + str(image_id)
-    return image_name
-
-
-def get_image_usage_report(request, period_from=None, period_to=None, verbose=False):
-
-    url = 'usage/imageCount/' + ('?' if period_from or period_to else '')
-    print '^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^'
-    print url
-    print '^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^'
-    params = []
-
-    if period_from:
-        params.append('start=' + str(period_from))
-    if period_to:
-        params.append('end=' + str(period_to))
-    if len(params) > 0:
-        url += "&".join(params)
-
-    data = astute(request, url)
-    '''
-    if verbose:
-        projects = dict([(p.id, p) for p in get_projects(request)])
-        accounts = dict([(a['user'], a) for a in get_billing_type_mappings(request)])
-
-        for item in data:
-            project = projects.get(item['user'], None)
-            account = accounts.get(item['user'], None)
-            item['user'] = project and project.name or '!ERR'
-            item['service_id'] = account and account['extra_fields'] and account['extra_fields']['service_id'] or '!ERR: %s' % item['user']
-            #item['inv_date'] = item['inv_date'].split(' ')[0]
-            #item['inv_from'] = item['inv_from'].split(' ')[0]
-            #item['inv_to'] = item['inv_to'].split(' ')[0]
-            item['last_updated'] = item['last_updated'].split(' ')[0]
-    '''
-    print 'TESTTTTTTTT'
-    return data
 
 
