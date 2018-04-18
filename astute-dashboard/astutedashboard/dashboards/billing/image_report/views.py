@@ -15,59 +15,33 @@ import datetime
 from django.http import HttpResponse
 
 from astutedashboard.common import \
-    get_discount_types, \
-    get_discounts, \
-    get_discount_mappings, \
-    get_discount_mapping, \
-    get_billing_plan_mappings, \
-    get_billing_plan_mapping, \
-    get_projects, \
-    get_plans, \
     get_image_list, \
     get_image_count, \
     get_image_name, \
     get_image_usage_report
     
-from astutedashboard.dashboards.billing.image_report \
-    import forms as panel_forms
-from astutedashboard.dashboards.billing.image_report \
-    import tables as panel_tables
 
 class IndexView(generic.TemplateView):
-    #table_class = panel_tables.BillingPlanMappingsTable
     template_name = 'billing/image_report/index.html'
-    page_title = _("SQL Image Usage Report")
-
-    def get_data(self):
-        period_from = self.request.session.get('image_filter_period_from')
-        period_to = self.request.session.get('image_filter_period_to')
-        abc = get_image_usage_report(self.request,
-            period_from=period_from,
-            period_to=period_to,
-            verbose=True)
-
-        print '**********************/*****************'
-        print abc
-        print '**********************/*****************'
-        return abc
 
     def get_context_data(self, **kwargs):
         context = super(IndexView, self).get_context_data(**kwargs)
         context['admin_image_report_filter_endpoint'] = 'search_filter'
         context['image_filter_period_from'] = self.request.session.get('image_filter_period_from') or ''
         context['image_filter_period_to'] = self.request.session.get('image_filter_period_to') or ''
-        abc = get_image_usage_report(self.request,
-            period_from=context['image_filter_period_from'],
-            period_to=context['image_filter_period_to'],
-            verbose=True)
-        context['abc'] = abc
+        
+        image_data1, report_date_list = get_image_usage_report(self.request, 
+                                             period_from=context['image_filter_period_from'],
+                                             period_to=context['image_filter_period_to'],
+                                             verbose=True)
+        
+
         image_data = get_image_count(self.request)
         original_image_list = get_image_list(self.request)
-        #print '++++++++++++++++++++++'
-        #print original_image_list
-        #print '++++++++++++++++++++++'
+        
         user_data = {}
         user_data1 = {}
+        '''
         for date in image_data:
             for user in image_data[date]:
                 start = datetime.datetime.strptime("2018-04-05", "%Y-%m-%d")
@@ -114,16 +88,9 @@ class IndexView(generic.TemplateView):
                 #user_data[image_name] = user_data[user]
                 #del user_data[user]
                 #print user_data
-
-        #print '---------------------------------------------'
-        #print user_data
-        #print '---------------------------------------------' 
-        #print user_data1
+        '''
         context['report_date_list'] = report_date_list
-        context['user_data']  = user_data
-        context['user_data1'] = user_data1
-        #print '**********************'
-        #print context
+        context['user_data1'] = image_data1
         return context
 
 
@@ -131,13 +98,8 @@ def search_filter(request):
     period_from = request.POST.get('period_from') or request.GET.get('period_from')
     period_to = request.POST.get('period_to') or request.GET.get('period_to')
 
-    print '++++++++++++++++++++++++++++++++'
-    print period_from
-    print period_to
-    print '+++++++++++++++++++++++++++++++'
-
     if period_from:
-        request.session['image_filter_period_to'] = period_from
+        request.session['image_filter_period_from'] = period_from
     else:
         try:
             del request.session['image_filter_period_from']

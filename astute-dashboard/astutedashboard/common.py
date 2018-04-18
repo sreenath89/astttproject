@@ -40,7 +40,9 @@ from glanceclient.v1 import client as glance_client
 import requests as http
 from openstack_dashboard.dashboards.project.images \
     import utils as image_utils
-from datetime import timedelta, date
+#from datetime import timedelta, date
+
+import datetime
 
 # Astute service base URL
 ASTUTE_BASE_URL = getattr(settings, 'ASTUTE_BASE_URL', 'http://os-controller1:9080/v1/')
@@ -91,17 +93,6 @@ def get_nova_client():
                               ADMIN_AUTH_URL)
     return nova
 
-def get_glance_client():    
-    '''Fetch the sql image usage count'''
-    glance_endpoint = get_admin_ksclient().service_catalog.url_for(service_type='image')
-    glance = glance_client.Client(version=1,
-                                  endpoint    = glance_endpoint,
-                                  username    = ADMIN_USERNAME,
-                                  password    = ADMIN_PASSWORD,
-                                  tenant_name = ADMIN_TENANT,
-                                  auth_url    = ADMIN_AUTH_URL
-                            )
-    return glance
 
 #
 # Common OpenStack API helpers
@@ -851,6 +842,18 @@ def get_image_count(request):
     print type(image_data)
     return image_data
 
+def get_glance_client():
+    '''Fetch the sql image usage count'''
+    glance_endpoint = get_admin_ksclient().service_catalog.url_for(service_type='image')
+    glance = glance_client.Client(version=1,
+                                  endpoint    = glance_endpoint,
+                                  username    = ADMIN_USERNAME,
+                                  password    = ADMIN_PASSWORD,
+                                  tenant_name = ADMIN_TENANT,
+                                  auth_url    = ADMIN_AUTH_URL
+                            )
+    return glance
+
 def get_image_list(request):
     #gc = get_glance_client()
     #image_list = gc.images.list()
@@ -871,9 +874,6 @@ def get_image_name(request, image_id):
 def get_image_usage_report(request, period_from=None, period_to=None, verbose=False):
 
     url = 'usage/imageCount/' + ('?' if period_from or period_to else '')
-    print '^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^'
-    print url
-    print '^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^'
     params = []
 
     if period_from:
@@ -884,6 +884,36 @@ def get_image_usage_report(request, period_from=None, period_to=None, verbose=Fa
         url += "&".join(params)
 
     data = astute(request, url)
+    original_image_list = get_image_list(request)
+    user_data = {}
+    user_data1 = {}
+    image_data = data
+    for date in image_data:
+        for user in image_data[date]:
+            if not period_from:
+                period_from = '2018-04-02'
+                period_to = '2018-04-12'
+            start = datetime.datetime.strptime(period_from, "%Y-%m-%d")
+            end = datetime.datetime.strptime(period_to, "%Y-%m-%d")
+            date_array = (start + datetime.timedelta(days=x) for x in range(0, (end-start).days + 1 ))
+            report_date_list = []
+
+            image_name = get_image_name(request, user)
+            #print image_name
+            if user not in user_data:
+                user_data[user] = {}
+                user_data1[image_name] = {}
+
+            user_data[user][date] = image_data[date][user]
+            user_data1[image_name][date] = image_data[date][user]
+
+            for date_object in date_array:
+                date_val = date_object.strftime("%Y-%m-%d")
+                report_date_list.append(date_val)
+                if date_val not in user_data1[image_name]:
+                    user_data1[image_name][date_val] = '0.0'
+   
+    #return user_data1 
     '''
     if verbose:
         projects = dict([(p.id, p) for p in get_projects(request)])
@@ -898,8 +928,13 @@ def get_image_usage_report(request, period_from=None, period_to=None, verbose=Fa
             #item['inv_from'] = item['inv_from'].split(' ')[0]
             #item['inv_to'] = item['inv_to'].split(' ')[0]
             item['last_updated'] = item['last_updated'].split(' ')[0]
-    '''
+    
     print 'TESTTTTTTTT'
+    print data
     return data
+    '''
+    return user_data1, report_date_list
+
+
 
 

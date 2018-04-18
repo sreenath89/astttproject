@@ -8,8 +8,11 @@ from django.utils.translation import ugettext_lazy as _
 import horizon
 from astutedashboard.dashboards.billing import dashboard
 
-class ImageUsageMappings(horizon.Panel):
-    name = _("Image Usage Report")
-    slug = "image_usage_report"
+class WindowsInstanceReport(horizon.Panel):
+    name = _("Windows/SQL Instance Report")
+    slug = "windows_instance_report"
 
-dashboard.M1AstutePanels.register(ImageUsageMappings)
+    #Only the following roles are allowed to access this dashboard
+    permissions = (('openstack.roles.admin',),)
+
+dashboard.M1AstutePanels.register(WindowsInstanceReport)
