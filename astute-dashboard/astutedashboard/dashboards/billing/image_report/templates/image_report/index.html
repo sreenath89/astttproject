@@ -79,7 +79,7 @@
 						</th>
 					</tr>
 					<tr class="tablesorter-headerRow">
-						<th class="normal_column">SQL Image Name</th>
+						<th class="normal_column">Image Name</th>
                                                    {% for date_val in report_date_list %}
                                                        <th class="normal_column">{{ date_val }}</th>
                                                    {% endfor %}
@@ -87,17 +87,26 @@
 					</tr>
 				</thead>
 				<tbody>
+{% if user_data1 %}
 
-{% for key, value in user_data1.items %}
+    {% for key, value in user_data1.items %}
  
                                                         <tr> 
                                                                 <td class="normal_column">{{key}}</td>
-{% for k, v in value.items|dictsort:"0.lower" %}
+        {% for k, v in value.items|dictsort:"0.lower" %}
 								<td class="normal_column">{{ v }}</td>
-{% endfor %}
+        {% endfor %}
 							</tr>
 
-{% endfor %}
+    {% endfor %}
+
+{% else %}
+<tr>
+<td>No data</td>
+</tr>
+
+{% endif %}
+
 				</tbody>
 			</table>
 	</dl>
