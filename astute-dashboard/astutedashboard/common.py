@@ -55,6 +55,9 @@ def astute(request, endpoint, method='GET', data=None):
                    headers={'X-Auth-Token': auth_token},
                    json=data
                )
+
+    print '------------------------------'
+    print response
     if getattr(settings, 'DEBUG'):
         print "###", "ASTUTE RESPONSE ### " * 5
         print response, response.text
@@ -889,7 +892,7 @@ def get_image_list(request):
 def get_image_name(request, image_id):
     image_list = get_image_list(request)
     if image_id in image_list:
-        image_name = image_list[image_id] + str(image_id)
+        image_name = image_list[image_id]
     else:
         image_name = 'ERROR!!' + str(image_id)
     return image_name
@@ -897,12 +900,12 @@ def get_image_name(request, image_id):
 
 def get_image_usage_report(request, period_from=None, period_to=None, verbose=False):
 
-    #Setting the url
-    url = 'usage/imageCount/' + ('?' if period_from or period_to else '')
-    params = []
+    ##Setting the url
+    #url = 'usage/imageCount/' + ('?' if period_from or period_to else '')
+    #params = []
 
     #For setting default conditions
-    '''  
+      
     today      = datetime.datetime.now()
     print today
     week_ago   = today - datetime.timedelta(days=6)
@@ -917,12 +920,10 @@ def get_image_usage_report(request, period_from=None, period_to=None, verbose=Fa
         period_from = str(week_ago)
     if not period_to:
         period_to = str(today)
-    '''
-    if not period_from:
-        period_from = '2018-04-02'
-    if not period_to:
-        period_to = '2018-04-10'
 
+    #Setting the url
+    url = 'usage/imageCount/' + ('?' if period_from or period_to else '')
+    params = []
  
     #Conditions when date range is specified
     if period_from:
@@ -933,25 +934,24 @@ def get_image_usage_report(request, period_from=None, period_to=None, verbose=Fa
         url += "&".join(params)
 
     data = astute(request, url)
+
     report_date_list = []
-    print data
-    print '++++++++++++++++++++++++++++++++++++++++++++++++++++++'
 
     #Fetching the image list
     original_image_list = get_image_list(request)
 
     #Initializing
-    user_data = {}
-    user_data1 = {}
-    image_data = data
+    usage_data  = {}
+    usage_data1 = {}
+    image_data  = data
 
-    start = datetime.datetime.strptime(period_from, "%Y-%m-%d")
-    end = datetime.datetime.strptime(period_to, "%Y-%m-%d")
-    date_array = (start + datetime.timedelta(days=x) for x in range(0, (end-start).days + 1 ))
+    #start = datetime.datetime.strptime(period_from, "%Y-%m-%d")
+    #end = datetime.datetime.strptime(period_to, "%Y-%m-%d")
+    #date_array = (start + datetime.timedelta(days=x) for x in range(0, (end-start).days + 1 ))
 
-    for date_object in date_array:
-        date_val = date_object.strftime("%Y-%m-%d")
-        report_date_list.append(date_val)
+    #for date_object in date_array:
+    #    date_val = date_object.strftime("%Y-%m-%d")
+    #    report_date_list.append(date_val)
 
     #Remove key-value pair if the key isn't present in the list of Windows/SQL images fetched above
     for date in list(image_data.keys()):
@@ -965,40 +965,37 @@ def get_image_usage_report(request, period_from=None, period_to=None, verbose=Fa
     print image_data
 
     #Loop through the data and convert into different dict format
-    for date in image_data:
-        for user in image_data[date]:
-            #if not period_from:
-            #    period_from = '2018-04-02'
-            #if not period_to:
-            #    period_to = '2018-04-15'
-            #print period_from
-
+    if image_data:
+      for date in image_data:
+        for image in image_data[date]:
+            
             start = datetime.datetime.strptime(period_from, "%Y-%m-%d")
             end = datetime.datetime.strptime(period_to, "%Y-%m-%d")
-            date_array1 = (start + datetime.timedelta(days=x) for x in range(0, (end-start).days + 1 ))
-            report1_date_list = []
+            date_array = (start + datetime.timedelta(days=x) for x in range(0, (end-start).days + 1 ))
+            report_date_list = []
              
             #Fetch the image name
-            image_name = get_image_name(request, user)
+            image_name = get_image_name(request, image)
 
-            if user not in user_data:
-                user_data[user] = {}
-                user_data1[image_name] = {}
+            if image not in usage_data:
+                usage_data[image] = {}
+                usage_data1[image_name] = {}
 
-            user_data[user][date] = image_data[date][user]
-            user_data1[image_name][date] = image_data[date][user]
+            usage_data[image][date] = image_data[date][image]
+            usage_data1[image_name][date] = int(image_data[date][image])
 
-            for date_object in date_array1:
+            for date_object in date_array:
                 date_val = date_object.strftime("%Y-%m-%d")
-                report1_date_list.append(date_val)
+                report_date_list.append(date_val)
                 
                 #Setting default value
-                if date_val not in user_data1[image_name]:
-                    user_data1[image_name][date_val] = '0.0'
+                if date_val not in usage_data1[image_name]:
+                    usage_data1[image_name][date_val] = '0'
    
-    #Return the usage data as well as the list of dates in the given date range
-    return user_data1, report_date_list
-
-
-
-
+      #Return the usage data as well as the list of dates in the given date range
+      #return user_data1, report_date_list
+    else:
+        usage_data1 = {}
+        report_date_list = []
+        #return user_data1, report_date_list
+    return usage_data1, report_date_list

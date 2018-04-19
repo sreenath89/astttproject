@@ -13,6 +13,7 @@ urlpatterns = [
 
     url(r'^$', views.IndexView.as_view(), name='index'),
     url(r'^search_filter$', views.search_filter, name='search_filter'),
+    url(r'^export_as_csv$', views.export_as_csv, name='export_as_csv'),
 ]
 
 
