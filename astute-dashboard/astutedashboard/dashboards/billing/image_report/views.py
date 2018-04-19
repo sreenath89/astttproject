@@ -15,9 +15,6 @@ import datetime
 from django.http import HttpResponse
 
 from astutedashboard.common import \
-    get_image_list, \
-    get_image_count, \
-    get_image_name, \
     get_image_usage_report
     
 
